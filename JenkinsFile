@@ -1,10 +1,27 @@
-FROM python:3.10-slim
+pipeline {
+    agent any
 
-WORKDIR /app
+    environment {
+        DOCKER = '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe"'
+    }
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+    stages {
+        stage('Build Docker Image') {
+            steps {
+                bat '%DOCKER% build -t python-app .'
+            }
+        }
 
-COPY . .
+        stage('Run Tests Inside Docker') {
+            steps {
+                bat '%DOCKER% run --rm python-app pytest'
+            }
+        }
 
-CMD ["python", "app.py"]
+        stage('Run Application') {
+            steps {
+                bat '%DOCKER% run --rm python-app'
+            }
+        }
+    }
+}
